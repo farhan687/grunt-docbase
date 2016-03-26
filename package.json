@@ -1,24 +1,24 @@
 {
-  "name": "grunt-docbase",
+  "name": "grunt-test-docbase",
   "description": "Static HTML generetor plugin.",
   "version": "0.1.23",
-  "homepage": "https://github.com/appbaseio/grunt-docbase",
+  "homepage": "https://github.com/farhan687/grunt-docbase",
   "author": {
-    "name": "Mateus Freira",
-    "email": "mateus.freira@gmail.com",
-    "url": "https://github.com/mateusfreira"
+    "name": "Farhan Chauhan",
+    "email": "farhan687@gmail.com",
+    "url": "https://github.com/farhan687"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:appbaseio/grunt-docbase.git"
+    "url": "git@github.com:farhan687/grunt-docbase.git"
   },
   "bugs": {
-    "url": "https://github.com/appbaseio/grunt-docbase/issues"
+    "url": "https://github.com/farhan687/grunt-docbase/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://raw.githubusercontent.com/appbaseio/grunt-docbase/master/LICENSE-MIT"
+      "url": "https://raw.githubusercontent.com/farhan687/grunt-docbase/master/LICENSE-MIT"
     }
   ],
   "main": "Gruntfile.js",
