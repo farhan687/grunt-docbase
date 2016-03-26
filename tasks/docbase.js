@@ -237,29 +237,36 @@ module.exports = function(grunt) {
                 versionFlag = link.indexOf('/index') == -1 ? false : true;
               }
 
-              if (linkKey == templLinks.length - 1) {
-                crawlPage(options.urlToAccess + link, findLinks, versionFlag, function(ph) {
+              //if (linkKey == templLinks.length - 1) {
+                crawlPage(options.urlToAccess + link, findLinks, versionFlag, function(ph, url, page) {
                     pageInfo.pageCounter++;
-                    pageInfo.currentPage++;
+                    console.log(pageInfo.pageCounter, 'Done : '+ urlToFielName(url));
+                    if(pageInfo.pageCounter == (pageInfo.currentPage+1)*pageInfo.pageSize) {
+                      pageInfo.currentPage++;    
+                      crawlChain(findLinks, once, ph);
+                    }
                     if(pageInfo.pageCounter == pageInfo.totalCounter) {
                       chainEnd(ph);    
                     }
-                    crawlChain(findLinks, once, ph);
+                    page.close();
                     setTimeout(function() {
                       ph.exit();
                     }, 100);
                 });
-              } else {
-                crawlPage(options.urlToAccess + link, findLinks, versionFlag, function(ph) {
-                  pageInfo.pageCounter++;
-                  if(pageInfo.pageCounter == pageInfo.totalCounter) {
-                    chainEnd(ph);    
-                  }
-                  setTimeout(function() {
-                    ph.exit();
-                  }, 100);
-                });
-              }
+              // } else {
+              //   crawlPage(options.urlToAccess + link, findLinks, versionFlag, function(ph, url , page) {
+              //     pageInfo.pageCounter++;
+              //     console.log(pageInfo.pageCounter, 'Done : '+ urlToFielName(url));
+                    
+              //     if(pageInfo.pageCounter == pageInfo.totalCounter) {
+              //       chainEnd(ph);    
+              //     }
+              //     page.close();
+              //     setTimeout(function() {
+              //       ph.exit();
+              //     }, 100);
+              //   });
+              // }
             }
           });
         }
@@ -349,10 +356,11 @@ module.exports = function(grunt) {
         }
       }, options.searchIndexSelector, url);
     };
-    var generatePage = function(page, url, ph) {
+    var generatePage = function(page, url, ph, callback) {
       page.evaluate(function(rootDocument) {
         return document.querySelector(rootDocument).innerHTML;
       }, function(documentContent) {
+                  
         var fileName = urlToFielName(url);
         documentContent = replaceBaseUrl(replacePageLinks(documentContent), fileName);
         if (options.generateHtml)
@@ -362,7 +370,11 @@ module.exports = function(grunt) {
         if (progressStart) {
           grunt.log.writeln("Generating:", options.generatePath + urlToFielName(url));
         }
-        checkQueueProcess(page, ph);
+        setTimeout(function(){
+          if(callback) {
+            callback(ph, url, page);
+          }
+        });   
       }, options.rootDocument);
 
     };
@@ -394,7 +406,7 @@ module.exports = function(grunt) {
                   getPageLinks(page, options.linksVersions, makeCrawler(true, true));
                 };
                 if (!options.onlysearchIndex) {
-                  generatePage(page, url, ph);
+                  generatePage(page, url, ph, callback);
                   if (options.generateSearchIndex) {
                     if (progressStart && !versionFlag)
                       generateSearchIndex(page, url);
@@ -405,9 +417,10 @@ module.exports = function(grunt) {
                   }
                 }
 
-                if (callback) {
-                  callback(ph);
-                }
+                // if (callback) {
+                //   callback(ph, url);
+                // }
+                
               },
               error: function(e) {
                   grunt.log.writeln("Erro generating page:", options.generatePath + urlToFielName(url));
