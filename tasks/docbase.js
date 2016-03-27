@@ -54,7 +54,7 @@ module.exports = function(grunt) {
     var bar;
     var versionsLink = [];
     var pageInfo = {
-      pageSize: 40,
+      pageSize: 3,
       totalPage: 0,
       currentPage: 0,
       pageCounter: 0,
@@ -196,7 +196,6 @@ module.exports = function(grunt) {
     };
     var chainEnd = function(ph) {
       prepareAssets();
-
       setTimeout(function() {
         ph.exit();
         done();
@@ -248,25 +247,12 @@ module.exports = function(grunt) {
                     if(pageInfo.pageCounter == pageInfo.totalCounter) {
                       chainEnd(ph);    
                     }
-                    page.close();
+                    //page.close();
                     setTimeout(function() {
                       ph.exit();
                     }, 100);
                 });
-              // } else {
-              //   crawlPage(options.urlToAccess + link, findLinks, versionFlag, function(ph, url , page) {
-              //     pageInfo.pageCounter++;
-              //     console.log(pageInfo.pageCounter, 'Done : '+ urlToFielName(url));
-                    
-              //     if(pageInfo.pageCounter == pageInfo.totalCounter) {
-              //       chainEnd(ph);    
-              //     }
-              //     page.close();
-              //     setTimeout(function() {
-              //       ph.exit();
-              //     }, 100);
-              //   });
-              // }
+              
             }
           });
         }
@@ -294,23 +280,19 @@ module.exports = function(grunt) {
             crawlPage(options.urlToAccess + link, findLinks, versionFlag, function(ph) {
               process.stdout.write("\u001b[2J\u001b[0;0H");
               bar.tick();
+              setTimeout(function() {
+                ph.exit();
+              }, 100);
               crawlChain(findLinks, once, ph);
             });
           }
           currentId++;
         } else {
-          if (options.onlysearchIndex) {
-            prepareAssets();
-
-            setTimeout(function() {
-              ph.exit();
-              done();
-            }, 0);
-          }
+          chainEnd(ph);
         }
       }
     }
-    var generateSearchIndex = function(page, url, ph, buildIndex) {
+    var generateSearchIndex = function(page, url, ph, buildIndex, callback) {
       page.evaluate(function(selector, url) {
         var HEADER = ['H2', 'H1', 'H3'];
         var elements = Array.prototype.slice.call(document.querySelectorAll(selector));
@@ -352,7 +334,11 @@ module.exports = function(grunt) {
             grunt.log.writeln("Creating index for: " + url);
           }
           grunt.file.write("search-index.json", JSON.stringify(searchIndex), 'w');
-          checkQueueProcess(page, ph);
+          setTimeout(function(){
+            if(callback) {
+              callback(ph, url);
+            }
+          });   
         }
       }, options.searchIndexSelector, url);
     };
@@ -413,13 +399,14 @@ module.exports = function(grunt) {
                   }
                 } else {
                   if (progressStart && !versionFlag) {
-                    generateSearchIndex(page, url, ph, true);
+                    generateSearchIndex(page, url, ph, true, callback);
+                  }
+                  else {
+                    if (callback) {
+                      callback(ph, url);
+                    }
                   }
                 }
-
-                // if (callback) {
-                //   callback(ph, url);
-                // }
                 
               },
               error: function(e) {
